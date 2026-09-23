@@ -132,7 +132,7 @@ function LandingPage() {
 
         <section id="que-hacemos" className="section">
           <div className="container">
-            <SectionHeading eyebrow="Qué hacemos" title="Tecnología que se adapta a tu negocio" text="No partimos de una plantilla. Primero entendemos tu necesidad y luego construimos la solución." />
+            <SectionHeading eyebrow="Qué hacemos" title="Tecnología que se adapta a tu negocio" text=" Primero entendemos tu necesidad y luego construimos la solución. No partimos de una plantilla." />
             <div className="service-grid">
               {services.map(({ icon: Icon, title, text }) => (
                 <article className="service-card" key={title}>
