@@ -1,42 +1,81 @@
-# CHG Desarrollo — Landing React
+# CHG Desarrollo
 
-Landing responsive para CHG Desarrollo construida con React + Vite.
+Sitio de chgdesarrollo.cl: landing pública, panel de administración y API REST.
 
-## Ejecutar
-
-```bash
-npm install
-npm run dev
+```
+                 CHG DESARROLLO
+                       │
+          ┌────────────┴────────────┐
+       LANDING                 ADMIN PANEL
+       pública                  /admin (JWT)
+          └────────────┬────────────┘
+                   REST API  (/api)
+                  Spring Boot 3 · Java 21
+          ┌────────────┴────────────┐
+      PostgreSQL                 Imágenes
+  clientes / proyectos      volumen /data/uploads
 ```
 
-Luego abrir la URL que indique Vite (normalmente http://localhost:5173).
+| Carpeta / archivo  | Contenido |
+|--------------------|-----------|
+| `src/`             | Frontend React + Vite (landing y panel) |
+| `backend/`         | API Spring Boot + Flyway + PostgreSQL |
+| `nginx.conf`       | Sirve el frontend y redirige `/api` al backend |
+| `docker-compose.yml` | Stack completo: `db`, `api`, `landing` |
 
-## Funcionalidades
+## API
 
-- Landing responsive.
-- Secciones: Inicio, Qué hacemos, Desarrollos, Clientes y Contacto.
-- Modal de detalle para cada desarrollo.
-- Enlace a demo/sitio de cada proyecto.
-- Panel `/admin` para agregar, editar y eliminar clientes y desarrollos.
-- Carga de logos/capturas mediante archivo.
-- Persistencia local con `localStorage`.
-- Diseño preparado para reemplazar la persistencia local por una API/backend.
+| Método | Ruta | Acceso |
+|--------|------|--------|
+| GET | `/api/public/projects` · `/api/public/clients` | Público (solo registros activos) |
+| POST | `/api/auth/login` | Público → devuelve JWT |
+| GET/POST/PUT/DELETE | `/api/admin/projects[/{id}]` · `/api/admin/clients[/{id}]` | Admin |
+| POST | `/api/admin/uploads` (multipart `file`) | Admin: PNG, JPG, WEBP o GIF, máx. 5 MB |
+| GET | `/api/uploads/{archivo}` | Público |
 
-## Importante para producción
+El esquema de la base de datos se crea con Flyway (`backend/src/main/resources/db/migration`).
+Para cambiarlo, agrega un `V2__...sql`; no edites el `V1`.
 
-El panel `/admin` es una solución inicial de frontend: los datos se guardan en el navegador y no existe autenticación real.
+## Desarrollo local
 
-Para una versión productiva recomiendo conectar:
-- Backend Spring Boot / Node.
-- PostgreSQL.
-- Login de administrador.
-- Almacenamiento de imágenes (S3, Cloudinary u otro).
-- CRUD de clientes/proyectos vía API.
+Requisitos: Node 20+, Java 21, Maven y Docker.
 
-## Personalización inmediata
+```bash
+# 1. Base de datos
+docker run -d --name chg-pg -p 5432:5432 \
+  -e POSTGRES_DB=chgdesarrollo -e POSTGRES_USER=chg -e POSTGRES_PASSWORD=chg postgres:16-alpine
 
-1. Cambiar correo `contacto@chgdesarrollo.cl` en `src/App.jsx`.
-2. Agregar tus clientes desde `/admin`.
-3. Agregar tus proyectos desde `/admin`.
-4. Cambiar textos y servicios en `src/App.jsx`.
-5. El logo está en `public/logo.png`.
+# 2. API (http://localhost:8080)
+cd backend && mvn spring-boot:run
+
+# 3. Frontend (http://localhost:5173, redirige /api al puerto 8080)
+npm install && npm run dev
+```
+
+Credenciales por defecto en desarrollo: `admin` / `admin123` (`backend/src/main/resources/application.yml`).
+
+## Producción (servidor con Docker)
+
+1. Copia `.env.example` a `.env` y define claves reales:
+   ```bash
+   cp .env.example .env
+   openssl rand -base64 48   # usar como JWT_SECRET
+   ```
+2. El servicio `landing` se conecta a la red externa `proxy` (tu proxy inverso con TLS).
+   Si no existe todavía: `docker network create proxy`.
+3. Levanta el stack:
+   ```bash
+   docker compose up -d --build
+   ```
+4. Apunta `chgdesarrollo.cl` al contenedor `chgdesarrollo-landing` (puerto 80) desde tu proxy.
+5. Entra a `https://chgdesarrollo.cl/admin` con `ADMIN_USERNAME` / `ADMIN_PASSWORD`.
+
+Los datos quedan en los volúmenes `db-data` (PostgreSQL) y `uploads` (imágenes); respáldalos.
+
+## Personalización
+
+- Correo de contacto: constante `CONTACT_EMAIL` en `src/landing/Landing.jsx`.
+- Textos de servicios, proceso y tecnologías: arreglos al inicio de `src/landing/Landing.jsx`.
+- Colores y tipografías: variables en `:root` de `src/styles.css`.
+- Logos: `public/logo-light.png` (fondos oscuros), `public/logo-dark.png` (fondos claros),
+  `public/logo-mark-light.png` (header, sin lema) y `public/favicon.png`.

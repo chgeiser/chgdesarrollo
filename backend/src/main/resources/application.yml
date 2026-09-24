@@ -1,0 +1,42 @@
+server:
+  port: 8080
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: chgdesarrollo-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/chgdesarrollo}
+    username: ${DB_USER:chg}
+    password: ${DB_PASSWORD:chg}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+app:
+  admin:
+    username: ${ADMIN_USERNAME:admin}
+    # En producción SIEMPRE definir ADMIN_PASSWORD
+    password: ${ADMIN_PASSWORD:admin123}
+  jwt:
+    # Mínimo 32 caracteres. En producción SIEMPRE definir JWT_SECRET
+    secret: ${JWT_SECRET:cambia-este-secreto-en-produccion-chgdesarrollo-2026}
+    expiration-hours: ${JWT_EXPIRATION_HOURS:12}
+  uploads:
+    dir: ${UPLOADS_DIR:./uploads}
+    public-path: /api/uploads
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
