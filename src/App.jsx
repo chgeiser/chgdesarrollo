@@ -228,7 +228,7 @@ function LandingPage() {
         <div className="container footer-inner">
           <img src="/logo.png" alt="CHG Desarrollo" />
           <span>© {new Date().getFullYear()} CHG Desarrollo. Desarrollos a tu medida.</span>
-          <Link to="/admin" className="admin-link"><Settings size={14} /> Administrar</Link>
+          
         </div>
       </footer>
 
@@ -318,7 +318,7 @@ function AdminPage() {
       <div className="admin-header">
         <div className="container admin-nav">
           <img src="/logo.png" alt="CHG Desarrollo" />
-          <div><button onClick={() => navigate("/")}>Ver landing</button><button className="danger-outline" onClick={reset}>Restaurar demo</button></div>
+          <div><button onClick={() => navigate("/")}>Ver landing</button><button className="danger-outline" onClick={reset}>Restaurar Página</button></div>
         </div>
       </div>
 
